@@ -1,141 +1,116 @@
-const api_url = 'https://api.quotable.io/random';
-const quoteDisplay = document.getElementById('quoteDisplay')
-const quoteinput = document.getElementById('quoteInput')
-const time = document.getElementById('timer')
-const btn = document.getElementById('next')
-const accuracy = document.getElementById('accuracy')
+const api_url = 'https://api.quotable.io/random?minLength=80&maxLength=100';
+const quoteSection = document.getElementById('quoteDisplay');
+const userInput = document.getElementById('quoteInput');
 
-quoteinput.onkeydown = function (event) {
+let quoteDisplay = "";
+let time = 60;
+let timer = "";
+let mistakes = 0;
 
-    if (event.which == 8 || event.which == 46) {
+const renderquote = async() => {
+    const response = await fetch(api_url); //fetch from url
 
-        event.preventDefault();   // turn off browser transition to the previous page 
-    }
-}; //function to disable backspace and delete options
+    const data = await response.json(); //stores response
 
-let correct = true
+    quote = data.content; //access response
+    let arr = quote.split("").map(value => {
+        return "<span class='quote-chars'>"+ value +"</span>" // wrap the elements in span tag
+    }) // arrays of characters
 
-var arrayquote
-var arrayvalue
+    quoteSection.innerHTML += arr.join("");
+    // console.log(arr);
+} //displays next random quotes
+console.log (quoteSection.innerHTML)
 
-quoteinput.addEventListener('input', () => {
-    arrayquote = quoteDisplay.querySelectorAll('span')
+userInput.addEventListener("input", () => {
+    let quoteChars = document.querySelectorAll(".quote-chars"); //fetches every single element from the quotesection of renderquote
 
-    arrayvalue = quoteinput.value.split('')
+    quoteChars = Array.from(quoteChars); // creates an array for quoteChars
+    
+    let userInputChars = userInput.value.split(""); //splits every single letters
 
-    correct = true
+    quoteChars.forEach((char, index) => {
+        if (char.innerText == userInputChars[index]) {
+            char.classList.add("correct");
+        } // if typed correctly
 
-    arrayquote.forEach((characterspan, index) => {
-        const character = arrayvalue[index]
+        else if (userInputChars[index] == null) {
+            if (char.classList.contains("correct")) {
+                char.classList.remove("correct");
+            }
+            else {
+                char.classList.remove("incorrect")
+            }
+        } // not yet typed
 
-        if (character == null) {
-            characterspan.classList.remove('correct')
-            characterspan.classList.remove('incorrect')
-            correct = false
-        } //not yet typed
-        else if (character === characterspan.innerText) {
-            characterspan.classList.add('correct')
-            characterspan.classList.remove('incorrect')
-            stopTimer()
-            acc()
-        } //typed correctly
         else {
-            characterspan.classList.add('incorrect')
-            characterspan.classList.remove('correct')
-            correct = false
-        } //wrong type
-    })
-    // if (correct) renderquote()
-});
+            if (!char.classList.contains("incorrect")) {
+                mistakes += 1;
+                char.classList.add("incorrect")
+            }
+            document.getElementById("mistakes").innerText = mistakes;
+        } // typed with mistakes
 
-function next() {
-    // if (correct) renderquote()
-    renderquote() // next quote
-    stopTimer() // start the timer from 0
-} //function to provide next text
+        let check = quoteChars.every((element) => {
+            return element.classList.contains("correct");
+        }); // by default collects all the correct values
 
-// async function randomQuote() {
-//     const response = await fetch(api_url);
-//     const data = await response.json();
-//     return data.content;
-// }
+        if (check) {
+            displayResult();
+        }
 
-async function randomQuote() {
-    const response = await fetch(api_url);
-    const data = await response.json();
-    return data.content;
-} //function to generate random text from api
+    }); // compares
 
-async function renderquote() {
-    const quote = await randomQuote()
+}); // compares whether displayed and inputted quotes are correct or not
 
-    console.log("Next Quote is displayed")
 
-    quoteDisplay.innerText = ''
+const displayResult = () => {
+    document.querySelector(".result").style.display = "block";
+    clearInterval(timer);
+    document.getElementById("stop").style.display = "none"
+    userInput.disabled = true;
 
-    quote.split('').forEach(character => {
-        const characterspan = document.createElement('span')
-
-        characterspan.classList.add('correct')
-
-        characterspan.innerText = character
-        quoteDisplay.appendChild(characterspan)
-        clearacc()
-        time.innerHTML = 0
-    });
-
-    quoteinput.value = null;
-    // startTimer();
-} //function to provide next quote after previous text is typed successfully
-
-let startTime;
-var timz;
-function startTimer() {
-    time.innerText = 0;
-    startTime = new Date()
-    timz = setInterval(() => {
-        time.innerText = getTimerTime()
-    }, 1000)
-} //function to start timer
-
-function getTimerTime() {
-    return Math.floor((new Date() - startTime) / 1000)
-} //functiom to accurate the timer
-
-// function checking() {
-//     // const item = "keerthi";
-//     let inp = quoteinput.value;
-//     let disp = quoteDisplay.value;
-
-//     if (inp === disp) {
-//         stopTimer();
-//     }
-// } //function for stoping timer when displayed text matches typed text
-
-function stopTimer() {
-    let inp = quoteinput.value;
-    let disp = quoteDisplay.value;
-
-    if (inp === disp) {
-        stopTimer();
+    let timeTaken = 1;
+    if (time != 1) {
+        timeTaken = (60 - time) / 100
     }
-    console.log("Completed");
-    clearInterval(timz);
-} //function to stop timer
 
-function acc() {
-    let p = arrayquote.length;
-    let q = arrayvalue.length;
-    let a = Math.floor((q / p) * 100)
-    accuracy.innerHTML = a
-}
-// let r = arrayquote.length;
-// console.log(r)
-function clearacc() {
-    accuracy.replaceChildren()
+    document.getElementById('speed').innerText = (userInput.value.length / 5/ timeTaken).toFixed(2) + "wpm"
+
+    document.getElementById('accuracy').innerText = Math.round (((userInput.value.length - mistakes) / userInput.value.length) * 100) + "%"
 }
 
-renderquote()
+
+const start = () => {
+    mistakes = 0;
+    timer ="";
+    userInput.disabled = false;
+    timeReduce();
+    document.getElementById('start').style.display = "none";
+    document.getElementById('stop').style.display = "block";
+} // start test function
 
 
-//url stored in api_url => fetching url => then extract data.content => async function to await for next random quote => at last again await for next quote
+function timeReduce() {
+    time = 60;
+    timer = setInterval(updateTimer, 1000)
+} //reduce the timer 
+
+function updateTimer() {
+    if (time == 0) {
+        displayResult();
+    } // if time comes 0 displays the result
+
+    else {
+        document.getElementById('timer').innerHTML = --time + "s";
+    }
+}
+
+
+window.onload = () => {
+    userInput.value = "";
+    document.getElementById('start').style.display = "block";
+    document.getElementById('stop').style.display = "none";
+    userInput.disabled = true;
+    renderquote();
+} // defaults when the page apperars for the first time
