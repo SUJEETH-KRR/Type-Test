@@ -4,24 +4,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Typing test</title>
+    <title>Type test</title>
     <link rel="stylesheet" href="index.css">
     <script src="index.js" defer></script>
 </head>
 
-<body>
-    <div class="timer" id="timer"></div>
+<body>  
+    <p class="timer">Time: <span id="timer">0s</span></p><br>
+    <p class="mistakes">Mistakes: <span id="mistakes">0</span></p>
+    <!-- <div class="timer" id="timer"></div> -->
     <div class="container">
         <div class="quote-display" id="quoteDisplay"></div> 
         <textarea id="quoteInput" class="quote-input" placeholder="Type here..." autofocus></textarea>
-        <div class="accuacy" value="Accuracy" id="accuracy"></div>
+        
         <div>
             
-            <button type="button" id="start" onclick="startTimer()">Start</button>
+            <button type="button" id="start" onclick="start()">Start</button>
 
-            <button type="button" id="btn" onclick="next()">Next</button>
+            <button type="button" id="stop" onclick="displayResult()">Stop</button>
+
+            <div class="result">
+                <div class="wrapper">
+                    <p>Accuracy: <span id="accuracy"></span></p>
+                    <p>Speed: <span id="speed"></span></p>
+                </div>
+            </div>
 
         </div>
+        
     </div>
 </body>
 
