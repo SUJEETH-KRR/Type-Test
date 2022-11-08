@@ -1,1 +1,1 @@
-# type-script
+# Speed Type Testing System
